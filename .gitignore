@@ -40,5 +40,7 @@ desktop.ini
 
 # Generated artifacts (keep examples/ tracked, ignore scratch output)
 *.svg
+!logo.svg
 !examples/**/*.svg
+!logo.svg
 scratch/
