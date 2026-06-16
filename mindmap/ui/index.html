@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mindmap</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── 顶栏 ── -->
+<div id="topbar">
+  <div class="topbar-left">
+    <span class="logo-icon">🧠</span>
+    <span id="filepath" class="filepath">—</span>
+    <span id="dirty-indicator" class="dirty hidden">●</span>
+  </div>
+  <div class="topbar-right">
+    <button id="btn-save" class="btn btn-primary" disabled>保存</button>
+    <button id="btn-export-svg" class="btn">SVG</button>
+    <button id="btn-export-md" class="btn">MD</button>
+  </div>
+</div>
+
+<!-- ── 画布 ── -->
+<div id="canvas-wrapper">
+  <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+    <g id="viewport">
+      <g id="connectors"></g>
+      <g id="nodes"></g>
+    </g>
+  </svg>
+  <div id="loading" class="loading hidden">加载中…</div>
+  <div id="error-msg" class="error hidden"></div>
+</div>
+
+<script src="api.js"></script>
+<script src="renderer.js"></script>
+<script src="interact.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
