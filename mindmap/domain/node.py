@@ -39,6 +39,61 @@ class Node:
     id: str = field(default_factory=_new_id)
     children: list["Node"] = field(default_factory=list)
 
+    # ---- in-place mutators (M3) ----------------------------------------------
+
+    def set_text(self, text: str) -> "Node":
+        """Change this node's text and return self."""
+        self.text = text
+        return self
+
+    def update_note(self, note: str | None) -> "Node":
+        """Change this node's note and return self (``None`` clears it)."""
+        self.note = note
+        return self
+
+    def remove_child(self, child: "Node | str") -> "Node | None":
+        """Detach *child* (by object or id) and return it.
+
+        The removed subtree is returned so callers can inspect or re-attach
+        it elsewhere. Returns ``None`` when *child* is not among immediate
+        children (not a descendant search — use :meth:`find` first).
+        """
+        child_id = child.id if isinstance(child, Node) else child
+        for i, c in enumerate(self.children):
+            if c.id == child_id:
+                return self.children.pop(i)
+        return None
+
+    def reorder_children(self, order: list[str]) -> None:
+        """Reorder immediate children to match *order* (a list of ids).
+
+        Raises ValueError if *order* contains duplicate, missing, or
+        unknown ids.
+        """
+        if len(order) != len(set(order)):
+            raise ValueError("Duplicate ids in order list")
+        if len(order) != len(self.children):
+            raise ValueError(
+                f"order has {len(order)} ids but node has "
+                f"{len(self.children)} children"
+            )
+        id_to_child = {c.id: c for c in self.children}
+        missing = [oid for oid in order if oid not in id_to_child]
+        if missing:
+            raise ValueError(f"Unknown child id(s): {missing}")
+        self.children = [id_to_child[oid] for oid in order]
+
+    def index_of(self, child: "Node | str") -> int:
+        """Return the 0-based index of *child* (by object or id).
+
+        Raises ValueError if *child* is not an immediate child.
+        """
+        child_id = child.id if isinstance(child, Node) else child
+        for i, c in enumerate(self.children):
+            if c.id == child_id:
+                return i
+        raise ValueError(f"Node {child_id} is not a child of {self.id}")
+
     # ---- construction helpers ------------------------------------------------
 
     @classmethod

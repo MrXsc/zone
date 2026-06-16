@@ -59,9 +59,48 @@ class MindMapService:
     def import_markdown(self, text: str, *, title: str | None = None) -> MindMap:
         return from_markdown(text, title=title)
 
+    # --- M3 editing (in-place via domain mutators + touch) -------------------
+
+    def add_child(self, mm: MindMap, parent_id: str, text: str, *,
+                  note: str | None = None,
+                  index: int | None = None) -> Node:
+        node = mm.add_child(parent_id, text, note=note, index=index)
+        mm.touch()
+        return node
+
+    def update_node(self, mm: MindMap, node_id: str, *,
+                    text: str | None = None,
+                    note: str | None = None) -> Node:
+        node = mm.update_node(node_id, text=text, note=note)
+        mm.touch()
+        return node
+
+    def remove(self, mm: MindMap, node_id: str) -> Node | None:
+        subtree = mm.remove(node_id)
+        mm.touch()
+        return subtree
+
+    def move(self, mm: MindMap, node_id: str, to_parent_id: str, *,
+             index: int | None = None) -> Node:
+        node = mm.move(node_id, to_parent_id, index=index)
+        mm.touch()
+        return node
+
     # --- visualization -------------------------------------------------------
 
     def render_svg(self, mindmap: MindMap) -> str:
         """Layout + render to an SVG string using the configured options."""
         boxes = layout(mindmap, self._layout_opts)
-        return render_svg(mindmap, boxes)
+        return render_svg(mindmap, boxes, style_map=mindmap.styles)
+
+    # --- M4 style overrides -------------------------------------------------
+
+    def set_style(self, mm: MindMap, node_id: str, **fields) -> None:
+        """Apply per-node style overrides (fill, stroke, text_color, …)."""
+        mm.set_style(node_id, **fields)
+        mm.touch()
+
+    def clear_style(self, mm: MindMap, node_id: str) -> None:
+        """Remove per-node style for *node_id*."""
+        mm.clear_style(node_id)
+        mm.touch()
