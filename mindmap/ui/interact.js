@@ -46,13 +46,17 @@ const INTERACT = {
       this._mouseDownX = e.clientX;
       this._mouseDownY = e.clientY;
       this._mouseDownTime = Date.now();
+      this._mouseDownButton = e.button;   // 0=left, 2=right
       const $g = e.target.closest('.node-group');
       this._mouseDownNodeId = $g ? $g.dataset.nodeId : null;
 
-      if ($g) {
-        // 节点上按下 → 选中 + 准备拖拽
+      if ($g && e.button === 0) {
+        // 左键节点上按下 → 选中 + 准备拖拽
         this.select($g.dataset.nodeId);
         this._isDragging = false;
+      } else if ($g && e.button === 2) {
+        // 右键节点 → 选中 + 显示上下文菜单（通过 contextmenu 事件处理）
+        this.select($g.dataset.nodeId);
       } else if (
         e.target === wrapper || e.target.id === 'canvas' ||
         e.target.id === 'viewport' || e.target.id === 'connectors' ||
@@ -104,17 +108,9 @@ const INTERACT = {
       }
 
       // 判定：点击 vs 拖拽（没移动就是点击）
+      // 单击已在 mousedown 时 select，这里只清除状态
       if (this._mouseDownNodeId && !this._isPanning) {
-        const dx = Math.abs(e.clientX - this._mouseDownX);
-        const dy = Math.abs(e.clientY - this._mouseDownY);
-        const dt = Date.now() - this._mouseDownTime;
-        if (dx < 5 && dy < 5) {
-          // 单击选中（已在 mousedown 时 select 了）
-          // 双击检测
-          if (dt < 300 && this._mouseDownNodeId) {
-            if (this.onDoubleClick) this.onDoubleClick(this._mouseDownNodeId);
-          }
-        }
+        // no-op: select already happened in mousedown
       }
 
       this._isPanning = false;

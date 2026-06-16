@@ -109,7 +109,7 @@ const APP = {
     const pid = INTERACT.selectedId || this.mindmap.root.id;
     await this._performEdit(API.addChild(this.mindmap, pid, '新节点'));
     // 选中新节点（最后一个子节点）
-    const parent = this._findNode(this.mindmap, pid);
+      const parent = this._findNodeById(pid);
     if (parent && parent.children && parent.children.length > 0) {
       const last = parent.children[parent.children.length - 1];
       INTERACT.select(last.id);
@@ -126,7 +126,7 @@ const APP = {
     }
     await this._performEdit(API.addSibling(this.mindmap, nid, '新节点', before));
     // 选中新增的兄弟
-    const parent = this._findParent(this.mindmap, nid);
+      const parent = this._findParentById(nid);
     if (parent && parent.children) {
       const origIdx = parent.children.findIndex(c => c.id === nid);
       const newIdx = before ? origIdx : origIdx + 1;
@@ -167,9 +167,9 @@ const APP = {
   async moveNode(nodeId, toParentId) {
     if (nodeId === toParentId || nodeId === this.mindmap.root.id) return;
     // 检查是否拖到自己子节点中
-    const target = this._findNode(this.mindmap, toParentId);
-    if (target && target.id === nodeId) return;
-    if (target && this._findNode(target, nodeId)) return; // 不能拖到自己的子树
+      const target = this._findNodeById(toParentId);
+      if (target && target.id === nodeId) return;
+      if (target && this._findNode(target, nodeId)) return; // 不能拖到自己的子树
     await this._performEdit(API.moveNode(this.mindmap, nodeId, toParentId));
   },
 
@@ -186,47 +186,63 @@ const APP = {
   _startEdit(nodeId) {
     if (!nodeId) return;
     this._cancelEdit();
-    const box = this.boxes[nodeId];
-    if (!box) return;
-
-    const node = this._findNode(this.mindmap, nodeId);
+    const box = this.boxes && this.boxes[nodeId];
+    if (!box) { this._startEditPrompt(nodeId); return; }
+    const node = this._findNodeById(nodeId);
     if (!node) return;
 
-    const wrapper = document.getElementById('canvas-wrapper');
-    const rect = wrapper.getBoundingClientRect();
+    try {
+      const wrapper = document.getElementById('canvas-wrapper');
+      const rect = wrapper.getBoundingClientRect();
+      const scale = INTERACT.scale || 1;
+      const tx = INTERACT.tx || 80;
+      const ty = INTERACT.ty || 60;
 
-    // 考虑缩放和平移
-    const x = box.x * INTERACT.scale + INTERACT.tx + rect.left;
-    const y = box.y * INTERACT.scale + INTERACT.ty + rect.top;
-    const w = box.width * INTERACT.scale;
-    const h = box.height * INTERACT.scale;
+      const x = box.x * scale + tx + rect.left;
+      const y = box.y * scale + ty + rect.top;
+      const w = Math.max(box.width * scale, 40);
+      const h = Math.max(box.height * scale, 24);
 
-    const input = document.createElement('input');
-    input.className = 'inline-edit';
-    input.type = 'text';
-    input.value = node.text || '';
-    input.style.left = x + 'px';
-    input.style.top = y + 'px';
-    input.style.width = Math.max(w, 40) + 'px';
-    input.style.height = h + 'px';
-    input.style.fontSize = (RENDERER._resolveStyle(nodeId, nodeId === this.mindmap.root.id).fontSize * INTERACT.scale) + 'px';
+      const input = document.createElement('input');
+      input.className = 'inline-edit';
+      input.type = 'text';
+      input.value = node.text || '';
+      input.style.left = x + 'px';
+      input.style.top = y + 'px';
+      input.style.width = w + 'px';
+      input.style.height = h + 'px';
+      try {
+        const fs = RENDERER._resolveStyle(nodeId, nodeId === this.mindmap.root.id).fontSize;
+        input.style.fontSize = (fs * scale) + 'px';
+      } catch (_) { input.style.fontSize = '14px'; }
 
-    this._editNodeId = nodeId;
-    this._editInput = input;
+      this._editNodeId = nodeId;
+      this._editInput = input;
 
-    input.addEventListener('blur', () => this._finishEdit());
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        input.blur();
-      } else if (e.key === 'Escape') {
-        this._cancelEdit();
-      }
-    });
+      input.addEventListener('blur', () => this._finishEdit());
+      input.addEventListener('keydown', (e) => {
+        e.stopPropagation();  // 防止触发全局快捷键
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        else if (e.key === 'Escape') { this._cancelEdit(); }
+        else if (e.key === 'Tab') { e.preventDefault(); }
+      });
 
-    wrapper.appendChild(input);
-    input.focus();
-    input.select();
+      document.body.appendChild(input);
+      input.focus();
+      input.select();
+    } catch (e) {
+      this._startEditPrompt(nodeId);
+    }
+  },
+
+  /** 降级：用浏览器 prompt 编辑 */
+  _startEditPrompt(nodeId) {
+    const node = this._findNodeById(nodeId);
+    if (!node) return;
+    const text = prompt('编辑节点文字：', node.text || '');
+    if (text !== null) {
+      this.updateNodeText(nodeId, text.trim() || ' ');
+    }
   },
 
   async _finishEdit() {
@@ -237,9 +253,7 @@ const APP = {
     this._editInput = null;
     this._editNodeId = null;
     if (input.parentNode) input.parentNode.removeChild(input);
-    if (text) {
-      await this.updateNodeText(nodeId, text);
-    }
+    await this.updateNodeText(nodeId, text || ' ');
   },
 
   _cancelEdit() {
@@ -434,6 +448,11 @@ const APP = {
     return null;
   },
 
+  /** 从 mindmap JSON 中查找节点（自动进入 root） */
+  _findNodeById(id) {
+    return this.mindmap ? this._findNode(this.mindmap.root, id) : null;
+  },
+
   _findParent(root, id) {
     if (!root || !root.children) return null;
     for (const c of root.children) {
@@ -442,6 +461,11 @@ const APP = {
       if (found) return found;
     }
     return null;
+  },
+
+  /** 从 mindmap JSON 中查找父节点 */
+  _findParentById(id) {
+    return this.mindmap ? this._findParent(this.mindmap.root, id) : null;
   },
 };
 
