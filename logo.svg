@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+    <linearGradient id="b1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f093fb"/>
+      <stop offset="100%" stop-color="#f5576c"/>
+    </linearGradient>
+    <linearGradient id="b2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4facfe"/>
+      <stop offset="100%" stop-color="#00f2fe"/>
+    </linearGradient>
+    <linearGradient id="b3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#43e97b"/>
+      <stop offset="100%" stop-color="#38f9d7"/>
+    </linearGradient>
+    <linearGradient id="b4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fa709a"/>
+      <stop offset="100%" stop-color="#fee140"/>
+    </linearGradient>
+    <linearGradient id="b5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a18cd1"/>
+      <stop offset="100%" stop-color="#fbc2eb"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#00000030"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="195" fill="url(#bg)" filter="url(#shadow)"/>
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#ffffff20" stroke-width="2"/>
+
+  <!-- Center node -->
+  <circle cx="200" cy="130" r="28" fill="#ffffff" filter="url(#shadow)"/>
+  <circle cx="200" cy="130" r="24" fill="url(#b1)"/>
+  <text x="200" y="136" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Arial, sans-serif">🧠</text>
+
+  <!-- Branch 1 - top right -->
+  <path d="M225 120 Q260 90 280 60" stroke="#ffffff60" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="285" cy="52" r="20" fill="url(#b2)" filter="url(#shadow)"/>
+  <text x="285" y="53" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Arial, sans-serif">✏️</text>
+  <path d="M300 45 Q320 35 335 25" stroke="#ffffff40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="342" cy="20" r="12" fill="#ffffff30"/>
+  <path d="M270 45 Q275 25 278 10" stroke="#ffffff40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="280" cy="5" r="10" fill="#ffffff25"/>
+
+  <!-- Branch 2 - right -->
+  <path d="M228 140 Q280 150 320 160" stroke="#ffffff60" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="328" cy="163" r="20" fill="url(#b3)" filter="url(#shadow)"/>
+  <text x="328" y="164" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Arial, sans-serif">🎨</text>
+  <path d="M348 170 Q360 180 370 190" stroke="#ffffff40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="375" cy="195" r="10" fill="#ffffff25"/>
+  <path d="M340 178 Q355 200 360 215" stroke="#ffffff40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="362" cy="222" r="10" fill="#ffffff25"/>
+
+  <!-- Branch 3 - bottom right -->
+  <path d="M215 155 Q230 195 240 230" stroke="#ffffff60" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="243" cy="240" r="20" fill="url(#b4)" filter="url(#shadow)"/>
+  <text x="243" y="241" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Arial, sans-serif">📐</text>
+
+  <!-- Branch 4 - bottom left -->
+  <path d="M185 155 Q170 195 160 230" stroke="#ffffff60" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="157" cy="240" r="20" fill="url(#b5)" filter="url(#shadow)"/>
+  <text x="157" y="241" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Arial, sans-serif">💾</text>
+
+  <!-- Branch 5 - left -->
+  <path d="M172 140 Q120 150 80 160" stroke="#ffffff60" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="72" cy="163" r="20" fill="url(#b1)" filter="url(#shadow)"/>
+  <text x="72" y="164" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Arial, sans-serif">🔗</text>
+  <path d="M52 170 Q40 180 30 190" stroke="#ffffff40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="25" cy="195" r="10" fill="#ffffff25"/>
+
+  <!-- Branch 6 - top left -->
+  <path d="M175 120 Q140 90 120 60" stroke="#ffffff60" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="115" cy="52" r="20" fill="url(#b2)" filter="url(#shadow)"/>
+  <text x="115" y="53" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Arial, sans-serif">📝</text>
+
+  <!-- Small decorative dots -->
+  <circle cx="350" cy="45" r="4" fill="#ffffff30"/>
+  <circle cx="370" cy="70" r="3" fill="#ffffff20"/>
+  <circle cx="30" cy="50" r="4" fill="#ffffff30"/>
+  <circle cx="50" cy="30" r="3" fill="#ffffff20"/>
+  <circle cx="370" cy="310" r="5" fill="#ffffff25"/>
+  <circle cx="30" cy="320" r="4" fill="#ffffff25"/>
+  <circle cx="200" cy="370" r="6" fill="#ffffff20"/>
+
+  <!-- Text -->
+  <text x="200" y="325" text-anchor="middle" fill="#ffffff" font-size="46" font-weight="800" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" letter-spacing="4">mindmap</text>
+  <text x="200" y="352" text-anchor="middle" fill="#ffffff80" font-size="13" font-weight="500" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" letter-spacing="2">ZERO DEPENDENCY · PURE PYTHON</text>
+</svg>
