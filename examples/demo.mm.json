@@ -1,0 +1,131 @@
+{
+  "id": "564e47962b9845fd9c71c8816bc00efa",
+  "title": "思维导图工具设计",
+  "created_at": "2026-06-16T04:23:18.446828+00:00",
+  "updated_at": "2026-06-16T04:23:18.446850+00:00",
+  "root": {
+    "id": "198f6cb0db764d8781fad29d61f8860a",
+    "text": "思维导图工具",
+    "note": null,
+    "children": [
+      {
+        "id": "a214e717202f4959b782baad73eb0fc6",
+        "text": "核心原则",
+        "note": null,
+        "children": [
+          {
+            "id": "f467c51755bd460c8fdf6f71e051863b",
+            "text": "极简",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "386d4b92d92948d48454e413e5be56da",
+            "text": "解耦",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "e594fee6ae4b444781f113da3689c84f",
+            "text": "轻量",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "d09ca5153bef4989966509035c28c52f",
+            "text": "零依赖",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "6144e0529a6d4d688ef4f057016f9cbb",
+        "text": "架构分层",
+        "note": null,
+        "children": [
+          {
+            "id": "fe07d0326b094c1789b2b673f4de724a",
+            "text": "domain 领域模型",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "1c46aa281a8f4297b8ec4a040c3606cd",
+            "text": "storage 存储抽象",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "f525430bbcf94abaa1f01a0552a257a2",
+            "text": "convert 格式转换",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "434979bd62ca45879305787add219a41",
+            "text": "layout 自动布局",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "83c659e3d58942c29d63529691d15902",
+            "text": "rendering 渲染输出",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "1c67efdf00a5434b8a4a1ecb69399fdd",
+            "text": "application 用例编排",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "8791c63fbb4844c2b0d2f831847ba8da",
+            "text": "presentation CLI 入口",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "5314e9cd40604ac4a260b0118ae63a36",
+        "text": "数据交换",
+        "note": null,
+        "children": [
+          {
+            "id": "b214cbf04b46473a93e900760d33397a",
+            "text": "mm.json 原生格式",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "ba6b6e409b934f9697e0858af5371369",
+            "text": "markdown 双向转换",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "7714b0bcee9942ccbbf04bf78bd11071",
+        "text": "可视化",
+        "note": null,
+        "children": [
+          {
+            "id": "f227c2dbda4445b8872340e919bf175e",
+            "text": "左右平衡树",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "ef8fa0e505cf46f689aa32ab565abc0f",
+            "text": "SVG 矢量输出",
+            "note": null,
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

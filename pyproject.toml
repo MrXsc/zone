@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mindmap"
+version = "0.1.0"
+description = "A minimal, elegant, lightweight mind-mapping tool. Pure Python stdlib, zero dependencies."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "zone" }]
+keywords = ["mindmap", "markdown", "svg", "cli", "lightweight"]
+# NOTE: Deliberately no `dependencies`. This project is stdlib-only.
+
+[project.scripts]
+mm = "mindmap.presentation.cli:main"
+
+[project.optional-dependencies]
+dev = []
+
+[tool.setuptools.packages.find]
+include = ["mindmap*"]
+exclude = ["tests*"]

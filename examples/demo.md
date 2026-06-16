@@ -1,0 +1,22 @@
+# 思维导图工具设计
+
+- 思维导图工具
+  - 核心原则
+    - 极简
+    - 解耦
+    - 轻量
+    - 零依赖
+  - 架构分层
+    - domain 领域模型
+    - storage 存储抽象
+    - convert 格式转换
+    - layout 自动布局
+    - rendering 渲染输出
+    - application 用例编排
+    - presentation CLI 入口
+  - 数据交换
+    - mm.json 原生格式
+    - markdown 双向转换
+  - 可视化
+    - 左右平衡树
+    - SVG 矢量输出

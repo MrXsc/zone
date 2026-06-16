@@ -1,0 +1,10 @@
+# Normalize text files to LF in the repo, regardless of OS checkout.
+# Keeps diffs clean and line endings consistent across platforms.
+* text=auto eol=lf
+
+# Binary assets — never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
