@@ -1,0 +1,183 @@
+{
+  "id": "9fbb2dfb7ad843859c086da074565b69",
+  "title": "操作系统知识导图",
+  "created_at": "2026-06-16T06:08:25.241868+00:00",
+  "updated_at": "2026-06-16T06:08:25.242125+00:00",
+  "root": {
+    "id": "21a6474784c34432a81351f93c59630d",
+    "text": "操作系统",
+    "note": null,
+    "children": [
+      {
+        "id": "cca5f02cc8924dca830e32ec72208a8b",
+        "text": "进程管理",
+        "note": null,
+        "children": [
+          {
+            "id": "3770007d683c4a41a4ee39f33813cca3",
+            "text": "进程与线程",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "ac8e6c6949c8472b9304abe38adb2b97",
+            "text": "调度算法",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "4d0430f824594dbc8380a6c42107b1f3",
+            "text": "同步互斥",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "38009e1d87974ec69c555760e52bbb9f",
+            "text": "IPC 通信",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "686ecb0fda8b470a821ef519e98b282a",
+        "text": "内存管理",
+        "note": null,
+        "children": [
+          {
+            "id": "f974dcbc75754f19ba583e5bc80a54d4",
+            "text": "分页分段",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "abd3e0ba03274127aedb421962811dec",
+            "text": "虚拟内存",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "912082a5455d4d6fabb60d1251731f01",
+            "text": "页面置换",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "5bc5866c38aa44d0be607b18d5ffcce0",
+        "text": "文件系统",
+        "note": null,
+        "children": [
+          {
+            "id": "09d3c1321bf2499d85ba0e211439fe9e",
+            "text": "目录结构",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "93a9985cb047482b8d3738a276268dcf",
+            "text": "文件分配",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "8050ca930a8b42c5857efc55bd94bff5",
+            "text": "磁盘管理",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "3002a6f71ad244f3a67efc44090ebcb6",
+        "text": "设备管理",
+        "note": null,
+        "children": [
+          {
+            "id": "bb2034dfb535483b9d19f6c458fbe45b",
+            "text": "I/O 控制",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "b1aa12dd83c048ac93de80f4ba2dfed5",
+            "text": "缓冲技术",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "2474fb6d7c714d9ea04f72141a76767d",
+            "text": "SPOOLing",
+            "note": null,
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "d8b5be8f7cea42b982547ec1165b8a67",
+        "text": "死锁",
+        "note": null,
+        "children": [
+          {
+            "id": "c158aa8bbd6a41bfbcc8953f9c8e67bb",
+            "text": "必要条件",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "ec1130e7bb584b3bb4466436e1369143",
+            "text": "处理方法",
+            "note": null,
+            "children": []
+          },
+          {
+            "id": "d1a360a4651c4012bb8596d1b3b8ae27",
+            "text": "银行家算法",
+            "note": null,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "styles": {
+    "21a6474784c34432a81351f93c59630d": {
+      "fill": "#2c3e50",
+      "text_color": "#ffffff",
+      "font_size": 18.0,
+      "font_weight": "bold",
+      "border_radius": 10.0
+    },
+    "cca5f02cc8924dca830e32ec72208a8b": {
+      "fill": "#e74c3c",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8.0
+    },
+    "686ecb0fda8b470a821ef519e98b282a": {
+      "fill": "#3498db",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8.0
+    },
+    "5bc5866c38aa44d0be607b18d5ffcce0": {
+      "fill": "#2ecc71",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8.0
+    },
+    "3002a6f71ad244f3a67efc44090ebcb6": {
+      "fill": "#f39c12",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8.0
+    },
+    "d8b5be8f7cea42b982547ec1165b8a67": {
+      "fill": "#9b59b6",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8.0
+    }
+  }
+}
