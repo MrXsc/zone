@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/stdlib-only-important" alt="Stdlib Only">
 </p>
 
-<h1 align="center">🧠Zone Mindmap</h1>
+<h1 align="center">🧠 Zone Mindmap</h1>
 
 <p align="center">
   <em>A minimal, elegant, zero-dependency mind-mapping tool for the command line.</em><br>
