@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="logo.svg" width="280" alt="mindmap logo">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/python-3.9%2B-blue" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/dependencies-zero-success" alt="Zero Dependencies">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License">
