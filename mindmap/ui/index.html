@@ -16,6 +16,9 @@
     <span id="dirty-indicator" class="dirty hidden">●</span>
   </div>
   <div class="topbar-right">
+    <button id="btn-add-child" class="btn btn-icon" title="添加子节点 (Tab)">＋</button>
+    <button id="btn-delete" class="btn btn-icon" title="删除节点 (Delete)">−</button>
+    <div class="topbar-divider"></div>
     <button id="btn-save" class="btn btn-primary" disabled>保存</button>
     <button id="btn-export-svg" class="btn">SVG</button>
     <button id="btn-export-md" class="btn">MD</button>
@@ -32,6 +35,16 @@
   </svg>
   <div id="loading" class="loading hidden">加载中…</div>
   <div id="error-msg" class="error hidden"></div>
+
+  <!-- ── 右键上下文菜单 ── -->
+  <div id="context-menu" class="context-menu hidden">
+    <div class="ctx-item" id="ctx-add-child">添加子节点 <span class="ctx-shortcut">Tab</span></div>
+    <div class="ctx-item" id="ctx-add-sibling">添加兄弟节点 <span class="ctx-shortcut">Enter</span></div>
+    <div class="ctx-item" id="ctx-add-parent">添加父节点 <span class="ctx-shortcut">Ctrl+Enter</span></div>
+    <div class="ctx-separator"></div>
+    <div class="ctx-item" id="ctx-edit">编辑 <span class="ctx-shortcut">F2</span></div>
+    <div class="ctx-item ctx-danger" id="ctx-delete">删除 <span class="ctx-shortcut">Del</span></div>
+  </div>
 </div>
 
 <script src="api.js"></script>

@@ -49,6 +49,15 @@ body {
   border: none; color: #fff;
 }
 .btn-primary:hover { opacity: .9; }
+.btn-icon {
+  width: 32px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 400;
+  border-radius: 8px;
+}
+.topbar-divider {
+  width: 1px; height: 24px; background: #e0e0e0; margin: 0 4px;
+}
 
 /* ── canvas ───────────────────────────────────────── */
 #canvas-wrapper {
@@ -84,3 +93,69 @@ body {
 .loading { background: rgba(255,255,255,.9); color: #666; }
 .error { background: #fee; color: #c0392b; border: 1px solid #f5c6cb; }
 .hidden { display: none; }
+
+/* ── 上下文菜单 ──────────────────────────────────── */
+.context-menu {
+  position: fixed; z-index: 200;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.12);
+  padding: 6px 0;
+}
+.ctx-item {
+  padding: 8px 16px;
+  font-size: 13px; color: #333;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background .1s;
+}
+.ctx-item:hover { background: #f0f2f5; }
+.ctx-item:active { background: #e5e7ea; }
+.ctx-danger { color: #e74c3c; }
+.ctx-danger:hover { background: #fef0ef; }
+.ctx-shortcut {
+  font-size: 11px; color: #999;
+  margin-left: 24px;
+  letter-spacing: .5px;
+}
+.ctx-separator {
+  height: 1px; background: #e8e8e8;
+  margin: 4px 8px;
+}
+
+/* ── 内联编辑器 ──────────────────────────────────── */
+.inline-edit {
+  position: fixed; z-index: 150;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  padding: 0 10px;
+  font-family: inherit;
+  font-weight: inherit;
+  color: #1a1a2e;
+  caret-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102,126,234,.2);
+}
+
+/* ── 拖拽 ────────────────────────────────────────── */
+.drag-ghost {
+  position: fixed; z-index: 300;
+  pointer-events: none;
+  background: rgba(102,126,234,.15);
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #667eea; font-weight: 500;
+  opacity: .85;
+  box-shadow: 0 8px 32px rgba(102,126,234,.25);
+}
+.node-group.dragging { opacity: .35; }
+.node-group.drop-target .node-rect {
+  stroke: #667eea !important;
+  stroke-width: 3 !important;
+  stroke-dasharray: 6 3 !important;
+}
+#canvas-wrapper.dragging { cursor: default; }

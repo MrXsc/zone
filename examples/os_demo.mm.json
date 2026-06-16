@@ -145,39 +145,39 @@
     "21a6474784c34432a81351f93c59630d": {
       "fill": "#2c3e50",
       "text_color": "#ffffff",
-      "font_size": 18.0,
+      "font_size": 18,
       "font_weight": "bold",
-      "border_radius": 10.0
-    },
-    "cca5f02cc8924dca830e32ec72208a8b": {
-      "fill": "#e74c3c",
-      "text_color": "#ffffff",
-      "font_weight": "bold",
-      "border_radius": 8.0
-    },
-    "686ecb0fda8b470a821ef519e98b282a": {
-      "fill": "#3498db",
-      "text_color": "#ffffff",
-      "font_weight": "bold",
-      "border_radius": 8.0
-    },
-    "5bc5866c38aa44d0be607b18d5ffcce0": {
-      "fill": "#2ecc71",
-      "text_color": "#ffffff",
-      "font_weight": "bold",
-      "border_radius": 8.0
+      "border_radius": 10
     },
     "3002a6f71ad244f3a67efc44090ebcb6": {
       "fill": "#f39c12",
       "text_color": "#ffffff",
       "font_weight": "bold",
-      "border_radius": 8.0
+      "border_radius": 8
+    },
+    "5bc5866c38aa44d0be607b18d5ffcce0": {
+      "fill": "#2ecc71",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8
+    },
+    "686ecb0fda8b470a821ef519e98b282a": {
+      "fill": "#3498db",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8
+    },
+    "cca5f02cc8924dca830e32ec72208a8b": {
+      "fill": "#e74c3c",
+      "text_color": "#ffffff",
+      "font_weight": "bold",
+      "border_radius": 8
     },
     "d8b5be8f7cea42b982547ec1165b8a67": {
       "fill": "#9b59b6",
       "text_color": "#ffffff",
       "font_weight": "bold",
-      "border_radius": 8.0
+      "border_radius": 8
     }
   }
 }
