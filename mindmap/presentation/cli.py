@@ -22,8 +22,86 @@ import argparse
 import sys
 from pathlib import Path
 
-from mindmap.application.services import MindMapService
 from mindmap.storage.json_repository import JsonFileRepository
+
+
+# --------------------------------------------------------------------------- #
+#  service — thin orchestration
+# --------------------------------------------------------------------------- #
+
+from pathlib import Path as _Path
+
+from mindmap.convert.markdown import from_markdown, to_markdown
+from mindmap.domain.mindmap import MindMap
+from mindmap.domain.node import Node
+from mindmap.layout import LayoutOptions, layout
+from mindmap.rendering.svg import render_svg
+from mindmap.storage.repository import MindMapRepository
+from mindmap.storage.json_repository import JsonFileRepository
+
+
+class MindMapService:
+    """Orchestrates domain/storage/convert/layout/rendering into use cases."""
+
+    def __init__(self, repository: MindMapRepository,
+                 layout_opts: LayoutOptions | None = None) -> None:
+        self._repo = repository
+        self._layout_opts = layout_opts
+
+    def new(self, title: str, root_text: str) -> MindMap:
+        return MindMap.new(title=title, root_text=root_text)
+
+    def open(self, path: str | _Path) -> MindMap:
+        return self._repo.load(_Path(path))
+
+    def save_as(self, mindmap: MindMap, path: str | _Path) -> _Path:
+        mindmap.touch()
+        target = _Path(path)
+        self._repo.save(mindmap, target)
+        return target
+
+    def export_markdown(self, mindmap: MindMap) -> str:
+        return to_markdown(mindmap)
+
+    def import_markdown(self, text: str, *, title: str | None = None) -> MindMap:
+        return from_markdown(text, title=title)
+
+    def add_child(self, mm: MindMap, parent_id: str, text: str, *,
+                  note: str | None = None,
+                  index: int | None = None) -> Node:
+        node = mm.add_child(parent_id, text, note=note, index=index)
+        mm.touch()
+        return node
+
+    def update_node(self, mm: MindMap, node_id: str, *,
+                    text: str | None = None,
+                    note: str | None = None) -> Node:
+        node = mm.update_node(node_id, text=text, note=note)
+        mm.touch()
+        return node
+
+    def remove(self, mm: MindMap, node_id: str) -> Node | None:
+        subtree = mm.remove(node_id)
+        mm.touch()
+        return subtree
+
+    def move(self, mm: MindMap, node_id: str, to_parent_id: str, *,
+             index: int | None = None) -> Node:
+        node = mm.move(node_id, to_parent_id, index=index)
+        mm.touch()
+        return node
+
+    def render_svg(self, mindmap: MindMap) -> str:
+        boxes = layout(mindmap, self._layout_opts)
+        return render_svg(mindmap, boxes, style_map=mindmap.styles)
+
+    def set_style(self, mm: MindMap, node_id: str, **fields) -> None:
+        mm.set_style(node_id, **fields)
+        mm.touch()
+
+    def clear_style(self, mm: MindMap, node_id: str) -> None:
+        mm.clear_style(node_id)
+        mm.touch()
 
 
 # --------------------------------------------------------------------------- #

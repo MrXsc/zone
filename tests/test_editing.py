@@ -8,7 +8,7 @@ from pathlib import Path
 
 from mindmap.domain.node import Node
 from mindmap.domain.mindmap import MindMap
-from mindmap.application.services import MindMapService
+from mindmap.application import MindMapService
 from mindmap.presentation.cli import main
 from mindmap.storage.json_repository import JsonFileRepository
 
