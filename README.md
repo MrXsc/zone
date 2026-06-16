@@ -88,20 +88,70 @@ mm from-md map.md -o map.mm.json
 
 ## Architecture
 
+### Data Flow
+
 ```
-                      ┌──────────────────────────┐
-  presentation/  CLI  │  Web UI  (server.py + ui/)│
-  ────────────────────┴──────────────────────────┘
-  application/     Service orchestration (thin)
-  ───────────────────────────────────────────────
-  rendering/  SVG + Theme    │  layout/  Balanced tree
-  ───────────────────────────┘
-  convert/  Markdown         │  storage/  JSON repository
-  ───────────────────────────┘
-  domain/  Node · MindMap · StyleMap (zero deps)
+                         ┌──────────────────┐
+                         │   .mm.json File   │
+                         └────────┬─────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │        storage/           │
+                    │   JsonFileRepository      │
+                    │   (load / save / atomic)  │
+                    └─────────────┬─────────────┘
+                                  │
+                          ┌───────┴───────┐
+                          │    domain/    │
+                          │  Node        │
+                          │  MindMap     │── MindMap.from_dict() / .to_dict()
+                          │  StyleMap    │
+                          └───────┬───────┘
+                                  │
+                    ┌─────────────┼─────────────┐
+                    │             │             │
+              ┌─────┴────┐  ┌────┴────┐  ┌────┴────┐
+              │ layout/  │  │convert/ │  │rendering│
+              │ balanced │  │Markdown │  │  SVG    │
+              │ tree     │  │bidir    │  │ + Theme │
+              └────┬─────┘  └─────────┘  └────┬────┘
+                   │                          │
+                   └──────────┬───────────────┘
+                              │
+                    ┌─────────┴──────────┐
+                    │   presentation/    │
+                    │   MindMapService   │
+                    └─────────┬──────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+        ┌─────┴────┐   ┌─────┴────┐   ┌──────┴──────┐
+        │   CLI    │   │ server.py│   │  Web UI     │
+        │ argparse │   │  Flask   │   │ SVG + JS    │
+        │ terminal │   │  REST    │   │ canvas      │
+        └──────────┘   │  API     │   │ interactions│
+                       └──────────┘   └─────────────┘
 ```
 
-**Dependency rule:** Outer layers depend on inner. The domain layer has zero imports outside stdlib.
+### How It Works
+
+**CLI path:** `mm add <id> "text" --doc map.mm.json`
+1. CLI parses args → calls `MindMapService`
+2. Service loads `.mm.json` via `JsonFileRepository`
+3. Domain model mutates the tree (`MindMap.add_child()`)
+4. Service saves back to disk
+
+**Web UI path:** `Tab` key in browser
+1. Browser keyboard event → `APP.addChild()` (app.js)
+2. `POST /api/node/add-child` → `server.py` receives mindmap JSON
+3. Server deserializes → mutates domain → recomputes layout
+4. Returns `{mindmap, boxes}` → browser re-renders SVG
+
+**Render path:** `mm render map.mm.json -o map.svg`
+1. Load domain model from file
+2. Compute layout coordinates (`layout/`)
+3. Apply theme + style overrides (`rendering/`)
+4. Emit SVG string
 
 ## File Format
 
