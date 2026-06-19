@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from functools import wraps
 from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -57,6 +58,22 @@ def _mutate(data: dict, mutator):
     mutator(mm)
     mm.touch()
     return {"mindmap": mm.to_dict(), "boxes": _boxes_dict(mm)}
+
+
+def api_route(f):
+    """Decorator for mutate-based API routes.
+
+    Deserializes JSON body, calls f(mm, body), returns {mindmap, boxes, ...}.
+    On error, returns {"error": str(e)} with status 500.
+    """
+    @wraps(f)
+    def wrapper():
+        try:
+            body = request.get_json(force=True)
+            return jsonify(_mutate(body, lambda mm: f(mm, body)))
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return wrapper
 
 
 # ── API ─────────────────────────────────────────
@@ -121,120 +138,89 @@ def api_render():
 # ── edit API ────────────────────────────────────
 
 @app.route("/api/node/add-child", methods=["POST"])
-def api_node_add_child():
-    try:
-        body = request.get_json(force=True)
-        return jsonify(_mutate(body, lambda mm: mm.add_child(
-            body["parent_id"], body["text"],
-            note=body.get("note"),
-            index=body.get("index"),
-        )))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_add_child(mm, body):
+    mm.add_child(body["parent_id"], body["text"],
+                 note=body.get("note"), index=body.get("index"))
 
 
 @app.route("/api/node/add-sibling", methods=["POST"])
-def api_node_add_sibling():
-    try:
-        body = request.get_json(force=True)
-        node_id = body["node_id"]
-        text = body["text"]
-        before = body.get("before", False)
-
-        def _do(mm):
-            parent = mm.find_parent(node_id)
-            if parent is None:
-                raise ValueError("Cannot add sibling to root node")
-            siblings = parent.children
-            idx = next(i for i, c in enumerate(siblings) if c.id == node_id)
-            insert_at = idx if before else idx + 1
-            mm.add_child(parent.id, text, index=insert_at)
-
-        return jsonify(_mutate(body, _do))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_add_sibling(mm, body):
+    node_id = body["node_id"]
+    text = body["text"]
+    before = body.get("before", False)
+    parent = mm.find_parent(node_id)
+    if parent is None:
+        raise ValueError("Cannot add sibling to root node")
+    siblings = parent.children
+    idx = next(i for i, c in enumerate(siblings) if c.id == node_id)
+    mm.add_child(parent.id, text, index=idx if before else idx + 1)
 
 
 @app.route("/api/node/add-parent", methods=["POST"])
-def api_node_add_parent():
-    try:
-        body = request.get_json(force=True)
-        node_id = body["node_id"]
-        text = body["text"]
-
-        def _do(mm):
-            from mindmap.domain.node import Node
-            child = mm.find(node_id)
-            if child is None:
-                raise ValueError(f"Node not found: {node_id}")
-            parent = mm.find_parent(node_id)
-            if parent is None:
-                raise ValueError("Cannot add parent to root node")
-            new_parent = Node.create(text)
-            idx = next(i for i, c in enumerate(parent.children) if c.id == node_id)
-            parent.children[idx] = new_parent
-            new_parent.add_child(child)
-
-        return jsonify(_mutate(body, _do))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_add_parent(mm, body):
+    from mindmap.domain.node import Node
+    node_id = body["node_id"]
+    child = mm.find(node_id)
+    if child is None:
+        raise ValueError(f"Node not found: {node_id}")
+    parent = mm.find_parent(node_id)
+    if parent is None:
+        raise ValueError("Cannot add parent to root node")
+    new_parent = Node.create(body["text"])
+    idx = next(i for i, c in enumerate(parent.children) if c.id == node_id)
+    parent.children[idx] = new_parent
+    new_parent.add_child(child)
 
 
 @app.route("/api/node/update", methods=["POST"])
-def api_node_update():
-    try:
-        body = request.get_json(force=True)
-        return jsonify(_mutate(body, lambda mm: mm.update_node(
-            body["node_id"],
-            text=body.get("text"),
-            note=body.get("note"),
-        )))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_update(mm, body):
+    mm.update_node(body["node_id"],
+                   text=body.get("text"), note=body.get("note"))
 
 
 @app.route("/api/node/delete", methods=["POST"])
-def api_node_delete():
-    try:
-        body = request.get_json(force=True)
-        return jsonify(_mutate(body, lambda mm: mm.remove(body["node_id"])))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_delete(mm, body):
+    mm.remove(body["node_id"])
 
 
 @app.route("/api/node/move", methods=["POST"])
-def api_node_move():
-    try:
-        body = request.get_json(force=True)
-        return jsonify(_mutate(body, lambda mm: mm.move(
-            body["node_id"], body["to_parent_id"],
-            index=body.get("index"),
-        )))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_move(mm, body):
+    mm.move(body["node_id"], body["to_parent_id"],
+            index=body.get("index"))
+
+
+@app.route("/api/node/style", methods=["POST"])
+@api_route
+def api_node_style(mm, body):
+    mm.set_style(body["node_id"], **body.get("style", {}))
+
+
+@app.route("/api/node/toggle-collapse", methods=["POST"])
+@api_route
+def api_node_toggle_collapse(mm, body):
+    mm.toggle_collapse(body["node_id"])
 
 
 @app.route("/api/node/reorder", methods=["POST"])
-def api_node_reorder():
-    try:
-        body = request.get_json(force=True)
-        direction = body["direction"]  # "up" or "down"
-
-        def _do(mm):
-            node_id = body["node_id"]
-            parent = mm.find_parent(node_id)
-            if parent is None:
-                raise ValueError("Cannot reorder root node")
-            siblings = parent.children
-            idx = next(i for i, c in enumerate(siblings) if c.id == node_id)
-            if direction == "up" and idx > 0:
-                siblings[idx], siblings[idx - 1] = siblings[idx - 1], siblings[idx]
-            elif direction == "down" and idx < len(siblings) - 1:
-                siblings[idx], siblings[idx + 1] = siblings[idx + 1], siblings[idx]
-
-        return jsonify(_mutate(body, _do))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+@api_route
+def api_node_reorder(mm, body):
+    node_id = body["node_id"]
+    direction = body["direction"]
+    parent = mm.find_parent(node_id)
+    if parent is None:
+        raise ValueError("Cannot reorder root node")
+    siblings = parent.children
+    idx = next(i for i, c in enumerate(siblings) if c.id == node_id)
+    if direction == "up" and idx > 0:
+        siblings[idx], siblings[idx - 1] = siblings[idx - 1], siblings[idx]
+    elif direction == "down" and idx < len(siblings) - 1:
+        siblings[idx], siblings[idx + 1] = siblings[idx + 1], siblings[idx]
 
 
 # ── static files ────────────────────────────────
@@ -251,7 +237,7 @@ def static_files(filename):
 
 def main():
     parser = argparse.ArgumentParser(description="mindmap Web UI")
-    parser.add_argument("--port", type=int, default=5000)
+    parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--dir", default=str(Path.cwd()))
     parser.add_argument("--debug", action="store_true")
     args = parser.parse_args()
