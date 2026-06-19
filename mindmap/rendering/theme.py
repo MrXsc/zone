@@ -58,6 +58,9 @@ class Theme:
 
     # --- label ---
     font_weight: str = "400"
+    font_style: str = "normal"
+    text_decoration: str = "none"
+    text_align: str = "center"
 
 
 # Default instance — used when the caller provides no explicit theme.
@@ -82,6 +85,9 @@ class ResolvedStyle:
     text_color: str
     font_size: float
     font_weight: str
+    font_style: str
+    text_decoration: str
+    text_align: str
     border_radius: float
     is_root: bool
 
@@ -137,6 +143,9 @@ def resolve(node_id: str, *,
 
     font_size = _pick("font_size", theme.font_size)
     font_weight = _pick("font_weight", theme.font_weight)
+    font_style = _pick("font_style", theme.font_style)
+    text_decoration = _pick("text_decoration", theme.text_decoration)
+    text_align = _pick("text_align", theme.text_align)
 
     return ResolvedStyle(
         fill=fill,
@@ -144,6 +153,9 @@ def resolve(node_id: str, *,
         text_color=text_color,
         font_size=font_size,
         font_weight=font_weight,
+        font_style=font_style,
+        text_decoration=text_decoration,
+        text_align=text_align,
         border_radius=border_radius,
         is_root=is_root,
     )

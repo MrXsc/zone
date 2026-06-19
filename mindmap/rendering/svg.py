@@ -106,15 +106,27 @@ def _nodes(mindmap: MindMap, boxes: LayoutResult, *,
 
 def _node_shape(node: Node, box: Box, rs) -> str:
     label = escape(node.text) or " "
+    # text-anchor & x based on alignment
+    if rs.text_align == "left":
+        anchor = "start"
+        tx = box.x + DEFAULT_THEME.font_size * 0.5
+    elif rs.text_align == "right":
+        anchor = "end"
+        tx = box.x + box.width - DEFAULT_THEME.font_size * 0.5
+    else:
+        anchor = "middle"
+        tx = box.cx
+    # inline style for font-style / text-decoration
+    text_style = f"font-style:{rs.font_style};text-decoration:{rs.text_decoration}"
     return (
         f'    <rect x="{box.x:g}" y="{box.y:g}" width="{box.width:g}" '
         f'height="{box.height:g}" rx="{rs.border_radius:g}" '
         f'fill="{rs.fill}" '
         f'stroke="{rs.stroke_none}" '
         f'stroke-width="{DEFAULT_THEME.stroke_width:g}"/>\n'
-        f'    <text class="{rs.text_class}" x="{box.cx:g}" '
+        f'    <text class="{rs.text_class}" x="{tx:g}" '
         f'y="{box.cy + rs.text_baseline_offset:g}" '
-        f'text-anchor="middle">{label}</text>'
+        f'text-anchor="{anchor}" style="{text_style}">{label}</text>'
     )
 
 
