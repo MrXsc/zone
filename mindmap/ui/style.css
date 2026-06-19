@@ -41,14 +41,14 @@ body {
   cursor: pointer; transition: all .15s;
   display: flex; align-items: center; gap: 4px;
 }
-.btn:hover { background: #f5f5f5; border-color: #ccc; }
+.btn:hover { background: #e6e8eb; border-color: #b0b0b0; }
 .btn:active { transform: scale(.96); }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn-primary {
   background: linear-gradient(135deg, #667eea, #764ba2);
   border: none; color: #fff;
 }
-.btn-primary:hover { opacity: .9; }
+.btn-primary:hover { background: linear-gradient(135deg, #5a6fe0, #6a4196); opacity: 1; }
 .btn-icon {
   width: 32px; padding: 0;
   display: flex; align-items: center; justify-content: center;
@@ -78,12 +78,25 @@ body {
 /* ── nodes ────────────────────────────────────────── */
 .node-group { cursor: pointer; transition: filter .2s; }
 .node-group:hover { filter: brightness(1.05) drop-shadow(0 2px 6px rgba(0,0,0,.1)); }
-.node-group.selected .node-rect { stroke-width: 3; stroke-dasharray: none; }
+.node-group.selected .node-rect {
+  stroke: #667eea !important;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px rgba(102,126,234,.3));
+}
+/* 样式面板打开时：选中高亮变为灰色，与导图操作模式区分 */
+.style-mode .node-group.selected .node-rect {
+  stroke: #b0b8c4 !important;
+  filter: drop-shadow(0 0 8px rgba(176,184,196,.25));
+}
 
 .node-rect {
   transition: stroke .15s, stroke-width .15s;
 }
 .node-text { pointer-events: none; }
+
+/* ── 折叠开关 ──────────────────────────────────────── */
+.collapse-toggle { cursor: pointer; }
+.collapse-toggle:hover circle { fill: #cbd5e1 !important; }
 
 /* ── loading & error ──────────────────────────────── */
 .loading, .error {
@@ -159,3 +172,88 @@ body {
   stroke-dasharray: 6 3 !important;
 }
 #canvas-wrapper.dragging { cursor: default; }
+
+/* ── 样式面板 ────────────────────────────────────── */
+.style-panel {
+  position: fixed; right: 16px; top: 72px;
+  width: 210px; z-index: 90;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.1);
+  padding: 14px 16px 16px;
+  transition: transform .2s, opacity .2s;
+}
+.style-panel.hidden {
+  transform: translateX(20px);
+  opacity: 0;
+  pointer-events: none;
+}
+.style-panel-header {
+  display: flex; justify-content: flex-end; align-items: center;
+  margin-bottom: 4px;
+}
+.style-close {
+  background: none; border: none;
+  font-size: 14px; color: #999; cursor: pointer; padding: 2px 4px;
+  border-radius: 4px;
+}
+.style-close:hover { background: #f0f0f0; color: #555; }
+.style-panel-body { display: flex; flex-direction: column; gap: 10px; }
+.style-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.style-row label { font-size: 12px; color: #666; min-width: 42px; }
+.style-row input[type="color"] {
+  width: 36px; height: 28px; padding: 0; border: 1px solid #ddd;
+  border-radius: 6px; cursor: pointer; background: none;
+}
+.style-row input[type="range"] {
+  flex: 1; height: 4px; accent-color: #667eea; cursor: pointer;
+}
+.style-row input[type="text"] {
+  width: 52px; height: 26px; border: 1px solid #ddd; border-radius: 6px;
+  font-size: 12px; color: #444; background: #fff; padding: 0 4px;
+  text-align: center; box-sizing: border-box;
+}
+.style-row input[type="text"]:focus {
+  border-color: #667eea; outline: none; box-shadow: 0 0 0 2px rgba(102,126,234,.2);
+}
+.style-btn-group {
+  display: flex; gap: 4px;
+}
+.style-btn {
+  width: 28px; height: 28px; border: 1px solid #ddd; border-radius: 6px;
+  background: #f8f8f8; color: #666; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0; transition: all .12s;
+  line-height: 1;
+}
+.style-btn:hover { background: #eee; border-color: #bbb; }
+.style-btn.active {
+  background: #667eea; color: #fff; border-color: #667eea;
+}
+.style-btn.active:hover { background: #5a6fe0; }
+.style-row-label { flex-wrap: wrap; gap: 6px; }
+.style-row-label label { min-width: auto; }
+
+/* 对齐图标 — 三栏横线（仿 Word 段落对齐） */
+.align-btn { width: 32px; height: 30px; }
+.icon-lines {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+}
+.icon-lines.is-center { align-items: center; }
+.icon-lines.is-right { align-items: flex-end; }
+.icon-lines span {
+  display: block; height: 2.5px; background: currentColor; border-radius: 1.5px;
+}
+.btn-block {
+  width: 100%; height: 30px; margin-top: 4px;
+  border: 1px solid #e0e0e0; border-radius: 8px;
+  background: #fff; color: #e74c3c;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all .15s;
+}
+.btn-block:hover { background: #fef0ef; border-color: #e74c3c; }

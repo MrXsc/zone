@@ -13,19 +13,23 @@ const RENDERER = {
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif",
     fontSize: 14,
     fontWeight: '400',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'center',
     strokeWidth: 1.2,
     connector: '#9aa5b1',
   },
 
   /**
    * 渲染整张导图
-   * @param {object} mindmap  - mindmap JSON（含 styles）
+   * @param {object} mindmap  - mindmap JSON（含 styles / collapsed）
    * @param {object} boxes    - node_id → {x, y, width, height}
    */
   render(mindmap, boxes) {
     this._mindmap = mindmap;
     this._boxes = boxes;
     this._styles = mindmap.styles || {};
+    this._collapsed = new Set(mindmap.collapsed || []);
 
     const $connectors = document.getElementById('connectors');
     const $nodes = document.getElementById('nodes');
@@ -42,7 +46,7 @@ const RENDERER = {
   /* ── 节点 ────────────────────────────────────── */
 
   _renderNodes($container) {
-    const walk = this._walk(this._mindmap.root);
+    const walk = this._walk(this._mindmap.root, this._collapsed);
     for (const node of walk) {
       const box = this._boxes[node.id];
       if (!box) continue;
@@ -75,15 +79,61 @@ const RENDERER = {
     // 文字
     const $text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     $text.setAttribute('class', 'node-text');
-    $text.setAttribute('x', box.x + box.width / 2);
+    // 锚点 & x 坐标
+    let anchor = 'middle';
+    let tx = box.x + box.width / 2;
+    if (style.textAlign === 'left') { anchor = 'start'; tx = box.x + style.fontSize * 0.5; }
+    else if (style.textAlign === 'right') { anchor = 'end'; tx = box.x + box.width - style.fontSize * 0.5; }
+    $text.setAttribute('x', tx);
     $text.setAttribute('y', box.y + box.height / 2 + style.fontSize * 0.35);
-    $text.setAttribute('text-anchor', 'middle');
+    $text.setAttribute('text-anchor', anchor);
     $text.setAttribute('fill', style.textColor);
     $text.setAttribute('font-family', this.theme.fontFamily);
     $text.setAttribute('font-size', style.fontSize);
     $text.setAttribute('font-weight', style.fontWeight);
+    $text.setAttribute('font-style', style.fontStyle);
+    $text.setAttribute('text-decoration', style.textDecoration);
     $text.textContent = node.text || ' ';
     $g.appendChild($text);
+
+    // 折叠开关：仅对非叶子节点显示
+    if (!isRoot && node.children && node.children.length > 0) {
+      const isCollapsed = this._collapsed.has(node.id);
+      const cx = box.x + box.width + 6;  // 右移避开文字
+      const cy = box.y + box.height / 2;
+      const r = 6;
+
+      const $btn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      $btn.setAttribute('class', 'collapse-toggle');
+      $btn.dataset.nodeId = node.id;
+
+      // 背景圆
+      const $circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      $circle.setAttribute('cx', cx);
+      $circle.setAttribute('cy', cy);
+      $circle.setAttribute('r', r);
+      $circle.setAttribute('fill', '#e2e8f0');
+      $circle.setAttribute('stroke', '#94a3b8');
+      $circle.setAttribute('stroke-width', '1');
+      $btn.appendChild($circle);
+
+      // +/- 图标（用路径画十字线）
+      const $icon = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const s = 3; // half-length of the cross arms
+      if (isCollapsed) {
+        // 展开状态（已折叠）：画 + 
+        $icon.setAttribute('d', `M ${cx - s} ${cy} L ${cx + s} ${cy} M ${cx} ${cy - s} L ${cx} ${cy + s}`);
+      } else {
+        // 折叠状态（未折叠）：画 -
+        $icon.setAttribute('d', `M ${cx - s} ${cy} L ${cx + s} ${cy}`);
+      }
+      $icon.setAttribute('stroke', '#475569');
+      $icon.setAttribute('stroke-width', '1.8');
+      $icon.setAttribute('stroke-linecap', 'round');
+      $btn.appendChild($icon);
+
+      $g.appendChild($btn);
+    }
 
     return $g;
   },
@@ -91,7 +141,7 @@ const RENDERER = {
   /* ── 连线 ────────────────────────────────────── */
 
   _renderConnectors($container) {
-    const walk = this._walk(this._mindmap.root);
+    const walk = this._walk(this._mindmap.root, this._collapsed);
     for (const parent of walk) {
       if (!parent.children || parent.children.length === 0) continue;
       const pbox = this._boxes[parent.id];
@@ -146,6 +196,9 @@ const RENDERER = {
         textColor: over?.text_color || t.rootText,
         fontSize: over?.font_size || t.fontSize,
         fontWeight: over?.font_weight || '600',
+        fontStyle: over?.font_style || 'normal',
+        textDecoration: over?.text_decoration || 'none',
+        textAlign: over?.text_align || 'center',
         borderRadius: over?.border_radius || t.rootRx,
       };
     }
@@ -155,17 +208,21 @@ const RENDERER = {
       textColor: over?.text_color || t.ink,
       fontSize: over?.font_size || t.fontSize,
       fontWeight: over?.font_weight || t.fontWeight,
+      fontStyle: over?.font_style || t.fontStyle,
+      textDecoration: over?.text_decoration || t.textDecoration,
+      textAlign: over?.text_align || t.textAlign,
       borderRadius: over?.border_radius || t.nodeRx,
     };
   },
 
   /* ── 树遍历 ──────────────────────────────────── */
 
-  _walk(root) {
+  /** 深度优先遍历，跳过折叠节点的子树 */
+  _walk(root, collapsed) {
     const result = [];
     function dfs(node) {
       result.push(node);
-      if (node.children) {
+      if (node.children && !(collapsed && collapsed.has(node.id))) {
         for (const c of node.children) dfs(c);
       }
     }

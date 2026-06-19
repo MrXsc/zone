@@ -6,6 +6,9 @@ const APP = {
   filePath: null,    // current file path
   isDirty: false,
   savedData: null,   // JSON.stringify 快照，用于 dirty 检测
+  _undoStack: [],
+  _redoStack: [],
+  _maxUndo: 50,
 
   /* ── 初始化 ────────────────────────────────── */
 
@@ -26,6 +29,9 @@ const APP = {
   async load(filePath) {
     this._showLoading(true);
     this._setError(null);
+    // 清空 undo/redo
+    this._undoStack = [];
+    this._redoStack = [];
     try {
       const data = await API.loadMap(filePath);
       const boxes = await API.layout(data);
@@ -81,9 +87,10 @@ const APP = {
 
   /* ── 编辑操作 ──────────────────────────────── */
 
-  /** 通用：执行 API 编辑 → 更新状态 → 重渲染 */
+  /** 通用：保存快照 → 执行 API 编辑 → 更新状态 → 重渲染 */
   async _performEdit(apiCall) {
     if (!this.mindmap) return;
+    this._pushUndo();
     const selectedId = INTERACT.selectedId;
     this._showLoading(true);
     this._setError(null);
@@ -91,8 +98,7 @@ const APP = {
       const { mindmap, boxes } = await apiCall;
       this._setMap(mindmap, boxes, this.filePath);
       RENDERER.render(mindmap, boxes);
-      INTERACT.fitView();
-      if (selectedId && this._findNode(mindmap, selectedId)) {
+      if (selectedId && this._findNode(mindmap.root, selectedId)) {
         INTERACT.select(selectedId);
       } else {
         INTERACT.select(mindmap.root.id);
@@ -153,7 +159,15 @@ const APP = {
   async deleteNode() {
     const nid = INTERACT.selectedId;
     if (!nid || nid === this.mindmap.root.id) return;
+    const parent = this._findParentById(nid);
+    const parentId = parent ? parent.id : null;
     await this._performEdit(API.deleteNode(this.mindmap, nid));
+    // _performEdit 回退到 root，这里切到父节点
+    if (parentId && this._findNode(this.mindmap.root, parentId)) {
+      INTERACT.select(parentId);
+    } else {
+      INTERACT.select(this.mindmap.root.id);
+    }
   },
 
   /** 上移 / 下移 */
@@ -171,6 +185,58 @@ const APP = {
       if (target && target.id === nodeId) return;
       if (target && this._findNode(target, nodeId)) return; // 不能拖到自己的子树
     await this._performEdit(API.moveNode(this.mindmap, nodeId, toParentId));
+  },
+
+  /** 切换折叠/展开 */
+  async toggleCollapse(nodeId) {
+    await this._performEdit(API.toggleCollapse(this.mindmap, nodeId));
+  },
+
+  /* ── Undo / Redo ──────────────────────────── */
+
+  /** 保存当前快照到 undo 栈（每次编辑前调用） */
+  _pushUndo() {
+    if (!this.mindmap) return;
+    this._undoStack.push({
+      mindmap: JSON.parse(JSON.stringify(this.mindmap)),
+      boxes: JSON.parse(JSON.stringify(this.boxes)),
+    });
+    if (this._undoStack.length > this._maxUndo) this._undoStack.shift();
+    this._redoStack = [];
+  },
+
+  undo() {
+    if (this._undoStack.length === 0) return;
+    // 当前状态推进 redo
+    this._redoStack.push({
+      mindmap: JSON.parse(JSON.stringify(this.mindmap)),
+      boxes: JSON.parse(JSON.stringify(this.boxes)),
+    });
+    const prev = this._undoStack.pop();
+    this._applyUndoState(prev);
+  },
+
+  redo() {
+    if (this._redoStack.length === 0) return;
+    this._undoStack.push({
+      mindmap: JSON.parse(JSON.stringify(this.mindmap)),
+      boxes: JSON.parse(JSON.stringify(this.boxes)),
+    });
+    const next = this._redoStack.pop();
+    this._applyUndoState(next);
+  },
+
+  /** 恢复 undo/redo 状态（不碰 savedData，dirty 标记不受影响） */
+  _applyUndoState(state) {
+    this.mindmap = state.mindmap;
+    this.boxes = state.boxes;
+    RENDERER.render(this.mindmap, this.boxes);
+    const id = INTERACT.selectedId;
+    if (id && this._findNode(this.mindmap.root, id)) {
+      INTERACT.select(id);
+    } else {
+      INTERACT.select(this.mindmap.root.id);
+    }
   },
 
   /** 更新节点文字 */
@@ -283,6 +349,107 @@ const APP = {
     if (menu) menu.classList.add('hidden');
   },
 
+  /* ── 样式面板 ──────────────────────────────── */
+
+  _styleNodeId: null,
+  _stylePanelVisible: false,
+
+  _toggleStylePanel() {
+    this._stylePanelVisible = !this._stylePanelVisible;
+    document.getElementById('style-panel').classList.toggle('hidden', !this._stylePanelVisible);
+    document.body.classList.toggle('style-mode', this._stylePanelVisible);
+    if (this._stylePanelVisible && this.mindmap) {
+      this._populateStylePanel(INTERACT.selectedId || this.mindmap.root.id);
+    }
+  },
+
+  _closeStylePanel() {
+    this._stylePanelVisible = false;
+    document.getElementById('style-panel').classList.add('hidden');
+    document.body.classList.remove('style-mode');
+  },
+
+  _getBtnGroupValues(groupId) {
+    const btns = document.querySelectorAll('#' + groupId + ' .style-btn.active');
+    return Array.from(btns).map(function(b) { return b.dataset.value; });
+  },
+
+  _populateStylePanel(nodeId) {
+    this._styleNodeId = nodeId;
+    const node = this._findNodeById(nodeId);
+    if (!node) return;
+
+    // 读取当前样式（合并主题默认值）
+    const isRoot = nodeId === this.mindmap.root.id;
+    const over = (this.mindmap.styles || {})[nodeId];
+    const t = RENDERER.theme;
+    const fill = over?.fill || (isRoot ? t.rootFill : t.nodeFill);
+    const stroke = over?.stroke || (isRoot ? 'none' : t.nodeStroke);
+    const textColor = over?.text_color || (isRoot ? t.rootText : t.ink);
+    const fontSize = over?.font_size || t.fontSize;
+    const fontWeight = over?.font_weight || (isRoot ? '600' : t.fontWeight);
+    const fontStyle = over?.font_style || 'normal';
+    const textDeco = over?.text_decoration || 'none';
+    const textAlign = over?.text_align || 'center';
+
+    document.getElementById('style-fill').value = fill;
+    document.getElementById('style-stroke').value = stroke === 'none' ? '#c3cad2' : stroke;
+    document.getElementById('style-text-color').value = textColor;
+    document.getElementById('style-font-size').value = fontSize;
+
+    // 字体按钮（B/I/S/U 可多选）
+    document.getElementById('style-font-buttons').querySelectorAll('.style-btn').forEach(function(b) {
+      var field = b.dataset.field;
+      var val = b.dataset.value;
+      var active = false;
+      if (field === 'font_weight') active = (fontWeight === val);
+      else if (field === 'font_style') active = (fontStyle === val);
+      else if (field === 'text_decoration') active = (textDeco.indexOf(val) >= 0);
+      b.classList.toggle('active', active);
+    });
+
+    // 对齐按钮（单选）
+    document.getElementById('style-align-buttons').querySelectorAll('.style-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.value === textAlign);
+    });
+  },
+
+  _readToggleStyle() {
+    // 从 B/I/S/U 按钮读取 font_weight / font_style / text_decoration
+    var fontWeight = null;
+    var fontStyle = null;
+    var decorations = [];
+    document.querySelectorAll('#style-font-buttons .style-btn.active').forEach(function(b) {
+      var field = b.dataset.field;
+      var val = b.dataset.value;
+      if (field === 'font_weight') fontWeight = val;
+      else if (field === 'font_style') fontStyle = val;
+      else if (field === 'text_decoration') decorations.push(val);
+    });
+    return {
+      font_weight: fontWeight,
+      font_style: fontStyle,
+      text_decoration: decorations.length ? decorations.join(' ') : null,
+    };
+  },
+
+  async _applyStyle() {
+    if (!this._styleNodeId || !this.mindmap) return;
+    var toggle = this._readToggleStyle();
+    var align = document.querySelector('#style-align-buttons .style-btn.active');
+    const style = {
+      fill: document.getElementById('style-fill').value,
+      stroke: document.getElementById('style-stroke').value,
+      text_color: document.getElementById('style-text-color').value,
+      font_size: parseFloat(document.getElementById('style-font-size').value),
+      font_weight: toggle.font_weight,
+      font_style: toggle.font_style,
+      text_decoration: toggle.text_decoration,
+      text_align: align ? align.dataset.value : null,
+    };
+    await this._performEdit(API.setStyle(this.mindmap, this._styleNodeId, style));
+  },
+
   /* ── 内部 ────────────────────────────────────── */
 
   _setMap(mindmap, boxes, filePath) {
@@ -296,6 +463,9 @@ const APP = {
     }
     this._updateDirty();
     this._updateSaveBtn();
+    if (this._stylePanelVisible && this.mindmap) {
+      this._populateStylePanel(INTERACT.selectedId || this.mindmap.root.id);
+    }
   },
 
   _bindUI() {
@@ -306,7 +476,37 @@ const APP = {
     // 编辑工具栏按钮
     document.getElementById('btn-add-child')?.addEventListener('click', () => this.addChild());
     document.getElementById('btn-delete')?.addEventListener('click', () => this.deleteNode());
+    document.getElementById('btn-undo')?.addEventListener('click', () => this.undo());
+    document.getElementById('btn-redo')?.addEventListener('click', () => this.redo());
+    document.getElementById('btn-style-toggle')?.addEventListener('click', () => this._toggleStylePanel());
+    document.getElementById('btn-close-style')?.addEventListener('click', () => {
+      this._closeStylePanel();
+    });
 
+    // 样式面板控件变更
+    ['style-fill', 'style-stroke', 'style-text-color'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', () => this._applyStyle());
+    });
+    document.getElementById('style-font-size')?.addEventListener('change', () => this._applyStyle());
+    // 字号输入框按回车立即应用（阻止冒泡避免触发导图快捷键）
+    document.getElementById('style-font-size')?.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.stopPropagation(); e.target.blur(); }
+    });
+    // 字体/对齐按钮点击
+    document.querySelectorAll('.style-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        var group = this.closest('.style-btn-group');
+        // 对齐按钮（单选）
+        if (group && group.id === 'style-align-buttons') {
+          group.querySelectorAll('.style-btn').forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+        } else {
+          // 字体按钮（多选）
+          this.classList.toggle('active');
+        }
+        APP._applyStyle();
+      });
+    });
     // 上下文菜单项
     document.getElementById('ctx-add-child')?.addEventListener('click', () => {
       const id = document.getElementById('context-menu')?.dataset.nodeId;
@@ -355,9 +555,17 @@ const APP = {
       }
     });
 
+    // 点击画布空白区域 → 关闭样式面板
+    document.getElementById('canvas-wrapper')?.addEventListener('click', (e) => {
+      if (this._stylePanelVisible && !e.target.closest('.node-group')) {
+        this._closeStylePanel();
+      }
+    });
+
     // INTERACT 回调
     INTERACT.onSelect = (nodeId) => {
       this._cancelEdit();
+      if (this._stylePanelVisible) this._closeStylePanel();
     };
     INTERACT.onDeselect = () => {
       this._cancelEdit();
@@ -370,6 +578,9 @@ const APP = {
     };
     INTERACT.onNodeDrop = (nodeId, targetId) => {
       this.moveNode(nodeId, targetId);
+    };
+    INTERACT.onCollapseToggle = (nodeId) => {
+      this.toggleCollapse(nodeId);
     };
   },
 

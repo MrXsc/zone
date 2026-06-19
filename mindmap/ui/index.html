@@ -19,9 +19,67 @@
     <button id="btn-add-child" class="btn btn-icon" title="添加子节点 (Tab)">＋</button>
     <button id="btn-delete" class="btn btn-icon" title="删除节点 (Delete)">−</button>
     <div class="topbar-divider"></div>
+    <button id="btn-undo" class="btn btn-icon" title="撤销 (Ctrl+Z)">↩</button>
+    <button id="btn-redo" class="btn btn-icon" title="重做 (Ctrl+Shift+Z)">↪</button>
+    <div class="topbar-divider"></div>
+    <button id="btn-style-toggle" class="btn btn-icon" title="样式面板">🎨</button>
+    <div class="topbar-divider"></div>
     <button id="btn-save" class="btn btn-primary" disabled>保存</button>
     <button id="btn-export-svg" class="btn">SVG</button>
     <button id="btn-export-md" class="btn">MD</button>
+  </div>
+</div>
+
+<!-- ── 样式面板 ── -->
+<div id="style-panel" class="style-panel hidden">
+  <div class="style-panel-header">
+    <button id="btn-close-style" class="style-close">✕</button>
+  </div>
+  <div class="style-panel-body">
+    <div class="style-row">
+      <label>填充</label>
+      <input type="color" id="style-fill" value="#ffffff">
+    </div>
+    <div class="style-row">
+      <label>边框</label>
+      <input type="color" id="style-stroke" value="#c3cad2">
+    </div>
+    <div class="style-row">
+      <label>文字色</label>
+      <input type="color" id="style-text-color" value="#1f2933">
+    </div>
+    <div class="style-row">
+      <label>字号</label>
+      <input type="text" id="style-font-size" list="font-size-list" value="14" inputmode="numeric" pattern="[0-9]+">
+      <datalist id="font-size-list">
+        <option value="10"><option value="12"><option value="14">
+        <option value="16"><option value="18"><option value="20">
+        <option value="24"><option value="28"><option value="32">
+      </datalist>
+    </div>
+    <div class="style-row style-row-label">
+      <label>字体</label>
+      <div class="style-btn-group" id="style-font-buttons">
+        <button class="style-btn style-btn-font" data-field="font_weight" data-value="700" title="粗体"><b>B</b></button>
+        <button class="style-btn style-btn-font" data-field="font_style" data-value="italic" title="斜体"><i>I</i></button>
+        <button class="style-btn style-btn-font" data-field="text_decoration" data-value="line-through" title="划去"><s>S</s></button>
+        <button class="style-btn style-btn-font" data-field="text_decoration" data-value="underline" title="下划线"><u>U</u></button>
+      </div>
+    </div>
+    <div class="style-row style-row-label">
+      <label>对齐</label>
+      <div class="style-btn-group" id="style-align-buttons">
+        <button class="style-btn align-btn" data-field="text_align" data-value="left" title="居左">
+          <span class="icon-lines"><span style="width:14px"></span><span style="width:20px"></span><span style="width:10px"></span></span>
+        </button>
+        <button class="style-btn align-btn" data-field="text_align" data-value="center" title="居中">
+          <span class="icon-lines is-center"><span style="width:12px"></span><span style="width:20px"></span><span style="width:16px"></span></span>
+        </button>
+        <button class="style-btn align-btn" data-field="text_align" data-value="right" title="居右">
+          <span class="icon-lines is-right"><span style="width:10px"></span><span style="width:20px"></span><span style="width:14px"></span></span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

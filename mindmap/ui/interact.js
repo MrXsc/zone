@@ -34,6 +34,7 @@ const INTERACT = {
   onDoubleClick: null,
   onContextMenu: null,
   onNodeDrop: null,
+  onCollapseToggle: null,
 
   /** 初始化 */
   init() {
@@ -51,6 +52,12 @@ const INTERACT = {
       this._mouseDownNodeId = $g ? $g.dataset.nodeId : null;
 
       if ($g && e.button === 0) {
+        // 点击折叠开关 → 不选中，直接切换折叠
+        if (e.target.closest('.collapse-toggle')) {
+          if (this.onCollapseToggle) this.onCollapseToggle($g.dataset.nodeId);
+          this._mouseDownNodeId = null;  // 不触发拖拽
+          return;
+        }
         // 左键节点上按下 → 选中 + 准备拖拽
         this.select($g.dataset.nodeId);
         this._isDragging = false;
@@ -138,8 +145,10 @@ const INTERACT = {
     /* ══════ 键盘事件 ══════ */
 
     window.addEventListener('keydown', (e) => {
-      // 编辑输入框中不处理快捷键
-      if (document.activeElement?.classList.contains('inline-edit')) {
+      // 输入框或样式面板内不处理快捷键
+      if (e.target.closest('#style-panel') ||
+          ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName || '') ||
+          document.activeElement?.classList.contains('inline-edit')) {
         return;
       }
 
@@ -180,6 +189,16 @@ const INTERACT = {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         APP.addParent();
+      }
+      // Ctrl+Z / Cmd+Z
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          APP.redo();
+        } else {
+          e.preventDefault();
+          APP.undo();
+        }
       }
     });
 

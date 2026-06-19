@@ -104,4 +104,14 @@ const API = {
   async reorderNode(mindmap, nodeId, direction) {
     return this._edit('/api/node/reorder', { mindmap, node_id: nodeId, direction });
   },
+
+  /** 切换折叠/展开 */
+  async toggleCollapse(mindmap, nodeId) {
+    return this._edit('/api/node/toggle-collapse', { mindmap, node_id: nodeId });
+  },
+
+  /** 设置节点样式 */
+  async setStyle(mindmap, nodeId, style) {
+    return this._edit('/api/node/style', { mindmap, node_id: nodeId, style });
+  },
 };
