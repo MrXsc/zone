@@ -6,7 +6,7 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 
-from mindmap.application import MindMapService
+from mindmap.presentation.cli import MindMapService
 from mindmap.domain.node import Node
 from mindmap.presentation.cli import main
 from mindmap.storage.json_repository import JsonFileRepository
