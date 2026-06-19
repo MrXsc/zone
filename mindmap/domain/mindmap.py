@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-
 from mindmap.domain.node import Node, _new_id
 from mindmap.domain.style import NodeStyle, StyleMap
 
@@ -37,6 +36,7 @@ class MindMap:
     updated_at: str = field(default_factory=_utcnow_iso)
     id: str = field(default_factory=_new_id)
     styles: StyleMap | None = None
+    collapsed: set[str] = field(default_factory=set)
 
     # NOTE: no __post_init__ here. The field defaults already stamp a freshly
     # constructed document; touching in __post_init__ would overwrite the
@@ -143,6 +143,21 @@ class MindMap:
             if not self.styles.styles:
                 self.styles = None   # keep serialization clean
 
+    # ---- collapse / expand --------------------------------------------------
+
+    def toggle_collapse(self, node_id: str) -> bool:
+        """Toggle collapse state for *node_id*. Returns ``True`` if now collapsed."""
+        node = self.find(node_id)
+        if node is None:
+            raise ValueError(f"Node not found: {node_id}")
+        if node.is_leaf:
+            raise ValueError("Cannot collapse a leaf node")
+        if node_id in self.collapsed:
+            self.collapsed.discard(node_id)
+            return False
+        self.collapsed.add(node_id)
+        return True
+
     # ---- lifecycle -----------------------------------------------------------
 
     @classmethod
@@ -180,16 +195,21 @@ class MindMap:
         }
         if self.styles is not None and self.styles.styles:
             d["styles"] = self.styles.to_dict()
+        if self.collapsed:
+            d["collapsed"] = sorted(self.collapsed)
         return d
 
     @classmethod
     def from_dict(cls, data: dict) -> "MindMap":
+        collapsed_raw = data.get("collapsed")
+        collapsed = set(collapsed_raw) if collapsed_raw else set()
         mm = cls(
             id=data.get("id") or _new_id(),
             title=data.get("title", ""),
             created_at=data.get("created_at") or _utcnow_iso(),
             updated_at=data.get("updated_at") or _utcnow_iso(),
             root=Node.from_dict(data.get("root") or {}),
+            collapsed=collapsed,
         )
         raw_styles = data.get("styles")
         if raw_styles:

@@ -26,6 +26,9 @@ class NodeStyle:
     text_color: str | None = None
     font_size: float | None = None
     font_weight: str | None = None
+    font_style: str | None = None       # "italic" | None
+    text_decoration: str | None = None  # "underline" | "line-through" | None
+    text_align: str | None = None       # "left" | "center" | "right"
     border_radius: float | None = None
 
 
