@@ -44,6 +44,10 @@ python server.py
 
 ## Web UI
 
+<p align="center">
+  <img src="demo_os.png" width="100%" alt="UI, OS mindmap demo">
+</p>
+
 ```
 http://localhost:5000/?path=examples/os_demo.mm.json
 ```
