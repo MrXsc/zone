@@ -148,9 +148,9 @@ Saved as `.mm.json`. The `styles` key is optional.
 - [x] **M1-M2** — Core model, layout, SVG rendering
 - [x] **M3-M4** — Node editing, per-node styles
 - [x] **M5** — Web UI viewer + editor (zoom, pan, edit, drag)
-- [ ] Collapse/expand branches
-- [ ] Undo history
-- [ ] Style panel in Web UI
+- [x] Collapse/expand branches
+- [x] Undo history
+- [x] Style panel in Web UI (B/I/S/U, alignment, color, font-size)
 
 ## License
 
