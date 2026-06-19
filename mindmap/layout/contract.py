@@ -57,9 +57,9 @@ class LayoutOptions:
         level_gap:       horizontal gap between a parent and its children.
     """
 
-    node_height: float = 32.0
-    min_node_width: float = 60.0
-    char_width: float = 7.0
-    h_padding: float = 16.0
+    node_height: float = 34.0
+    min_node_width: float = 90.0
+    char_width: float = 9.0
+    h_padding: float = 22.0
     sibling_gap: float = 12.0
     level_gap: float = 90.0

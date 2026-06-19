@@ -36,13 +36,16 @@ def layout(mindmap: MindMap, options: LayoutOptions | None = None) -> LayoutResu
     """Lay out ``mindmap`` as a balanced left/right tree.
 
     Returns a dict mapping node id -> Box with non-negative coordinates.
+    Nodes in ``mindmap.collapsed`` are treated as leaves — their children
+    are skipped during measurement and placement.
     """
     opts = options or LayoutOptions()
+    collapsed = mindmap.collapsed or set()
     boxes: LayoutResult = {}
 
     # --- Pass 1: measure heights and widths ----------------------------------
     heights: dict[str, float] = {}
-    _measure(mindmap.root, opts, heights, boxes)
+    _measure(mindmap.root, opts, heights, boxes, collapsed)
 
     # --- Pass 2: place coordinates -------------------------------------------
     # Root sits at the origin. Its own box is vertically centered on the
@@ -55,7 +58,7 @@ def layout(mindmap: MindMap, options: LayoutOptions | None = None) -> LayoutResu
 
     if root.children:
         _place_children(root, direction_hint="root", opts=opts,
-                        heights=heights, boxes=boxes)
+                        heights=heights, boxes=boxes, collapsed=collapsed)
 
     # --- Pass 3: normalize so min coords are 0 -------------------------------
     _normalize(boxes)
@@ -63,12 +66,17 @@ def layout(mindmap: MindMap, options: LayoutOptions | None = None) -> LayoutResu
 
 
 def _measure(node: Node, opts: LayoutOptions,
-             heights: dict[str, float], boxes: LayoutResult) -> float:
-    """Post-order: fill heights[id] and a placeholder box (width only)."""
-    if node.is_leaf:
+             heights: dict[str, float], boxes: LayoutResult,
+             collapsed: set[str]) -> float:
+    """Post-order: fill heights[id] and a placeholder box (width only).
+
+    Collapsed nodes are treated as leaves — their children are skipped.
+    """
+    if node.is_leaf or node.id in collapsed:
         h = opts.node_height
     else:
-        kids_h = sum(_measure(c, opts, heights, boxes) for c in node.children)
+        kids_h = sum(_measure(c, opts, heights, boxes, collapsed)
+                     for c in node.children)
         gaps = opts.sibling_gap * max(0, len(node.children) - 1)
         h = max(opts.node_height, kids_h + gaps)
     heights[node.id] = h
@@ -83,12 +91,15 @@ def _measure(node: Node, opts: LayoutOptions,
 
 def _place_children(parent: Node, *, direction_hint: int | str,
                     opts: LayoutOptions, heights: dict[str, float],
-                    boxes: LayoutResult) -> None:
+                    boxes: LayoutResult, collapsed: set[str]) -> None:
     """Place ``parent``'s children and recurse into each.
 
     ``direction_hint`` is either ``"root"`` (split children left/right) or
     an inherited +/-1 direction. Children stack vertically, centered on
     the parent's vertical center, and step outward by ``level_gap``.
+
+    Collapsed nodes' children are skipped (already treated as leaves in
+    measurement, but also guarded here for safety).
     """
     children = parent.children
     parent_box = boxes[parent.id]
@@ -103,15 +114,17 @@ def _place_children(parent: Node, *, direction_hint: int | str,
             if not group:
                 continue
             _stack_and_recurse(group, parent_box, direction,
-                               opts=opts, heights=heights, boxes=boxes)
+                               opts=opts, heights=heights, boxes=boxes,
+                               collapsed=collapsed)
     else:
         _stack_and_recurse(children, parent_box, direction_hint,
-                           opts=opts, heights=heights, boxes=boxes)
+                           opts=opts, heights=heights, boxes=boxes,
+                           collapsed=collapsed)
 
 
 def _stack_and_recurse(group: list[Node], parent_box: Box, direction: int,
                        *, opts: LayoutOptions, heights: dict[str, float],
-                       boxes: LayoutResult) -> None:
+                       boxes: LayoutResult, collapsed: set[str]) -> None:
     """Stack ``group`` vertically around the parent's center, then recurse."""
     total_h = sum(heights[c.id] for c in group)
     gaps = opts.sibling_gap * (len(group) - 1)
@@ -131,9 +144,9 @@ def _stack_and_recurse(group: list[Node], parent_box: Box, direction: int,
 
         boxes[child.id] = Box(x=child_x, y=child_y, width=child_w,
                               height=opts.node_height)
-        if not child.is_leaf:
+        if not child.is_leaf and child.id not in collapsed:
             _place_children(child, direction_hint=direction, opts=opts,
-                            heights=heights, boxes=boxes)
+                            heights=heights, boxes=boxes, collapsed=collapsed)
         cursor_y += child_h + opts.sibling_gap
 
 
