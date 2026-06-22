@@ -65,6 +65,27 @@ def layout(mindmap: MindMap, options: LayoutOptions | None = None) -> LayoutResu
     return boxes
 
 
+def _text_width(text: str, opts: LayoutOptions) -> float:
+    """Estimate rendered text width, accounting for CJK vs Latin chars.
+
+    CJK characters (Chinese, Japanese, Korean) are roughly twice as wide as
+    Latin characters at the same font size, so we bill them at 2× char_width.
+    """
+    w = 0.0
+    for ch in text:
+        cp = ord(ch)
+        # CJK Unified Ideographs (4E00-9FFF), CJK Ext A (3400-4DBF),
+        # CJK Ext B (20000-2A6DF), CJK Compatibility (F900-FAFF),
+        # Fullwidth forms (FF00-FFEF), plus common CJK punctuation.
+        if (0x4E00 <= cp <= 0x9FFF or 0x3400 <= cp <= 0x4DBF or
+            0x20000 <= cp <= 0x2A6DF or 0xF900 <= cp <= 0xFAFF or
+            0xFF00 <= cp <= 0xFFEF or 0x3000 <= cp <= 0x303F):
+            w += opts.char_width * 2
+        else:
+            w += opts.char_width
+    return w + opts.h_padding * 2
+
+
 def _measure(node: Node, opts: LayoutOptions,
              heights: dict[str, float], boxes: LayoutResult,
              collapsed: set[str]) -> float:
@@ -81,8 +102,7 @@ def _measure(node: Node, opts: LayoutOptions,
         h = max(opts.node_height, kids_h + gaps)
     heights[node.id] = h
 
-    width = max(opts.min_node_width,
-                len(node.text) * opts.char_width + opts.h_padding * 2)
+    width = max(opts.min_node_width, _text_width(node.text, opts))
     # Placeholder; real x/y assigned during placement. Width/height are
     # final here so sizing is available even if placement is skipped.
     boxes[node.id] = Box(x=0.0, y=0.0, width=width, height=opts.node_height)
